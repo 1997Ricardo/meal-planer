@@ -6,5 +6,5 @@ const CONFIG = {
     APP_NAME: "Meal Planner Familiar",
     VERSION: "1.0.0",
     // Dejamos esto preparado para cuando obtengas la URL de Apps Script en la fase final
-    API_URL: "https://script.google.com/macros/s/AKfycbzqRvLpumBV9vUVHpNU1P5xD0DRdgbiyHh02ttUBlQ8dJyNbpk-HT0XYDPU8n_t6RH5/exec" 
+    API_URL: "https://script.google.com/macros/s/AKfycbyu_qcEP8iFAHBxmIE2xpegADO6qlPCQ_ivsn_0uQTwxSp2tFeqF3uMe6GaLCYOd5gM/exec" 
   };

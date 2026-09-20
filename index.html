@@ -5,25 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Meal Planner Familiar</title>
   
-  <!-- Favicon para navegadores de escritorio -->
   <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
   
-  <!-- PWA meta tags -->
   <meta name="theme-color" content="#10b981">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   
-  <!-- Estilos CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Contenedor Principal de la App -->
   <div id="app-container">
     
-    <!-- Cabecera Superior -->
     <header class="app-header">
       <div class="header-title">
         <h1>Meal Planner</h1>
@@ -32,9 +27,8 @@
       <button id="theme-toggle" class="icon-btn" aria-label="Cambiar tema">🌙</button>
     </header>
 
-    <!-- Contenido Dinámico de las Vistas -->
     <main id="main-content" class="view-container">
-      <!-- Vista Dashboard (Por defecto) -->
+      <!-- Vista Dashboard -->
       <section id="view-dashboard" class="view active">
         <div class="welcome-card">
           <h2>¡Hola, familia! 👋</h2>
@@ -74,7 +68,8 @@
         <div style="margin-bottom: 16px; display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
           <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem;" onclick="AppWeek.goToCurrentWeek()">📅 Hoy</button>
           <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; background: var(--border-color);" onclick="AppWeek.copyPreviousWeek()">📋 Copiar Ant.</button>
-          <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: white;" onclick="AppMenus.openAddModal()">＋ Añadir Menú</button>
+          <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; background: var(--surface-color);" onclick="AppBulkText.openModal('menu')">✍️ Texto Menú</button>
+          <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: white;" onclick="AppMenus.openAddModal()">＋ Añadir</button>
         </div>
 
         <div id="weekly-menu-container" class="cards-grid">
@@ -86,7 +81,10 @@
       <section id="view-shopping" class="view">
         <div class="section-title" style="margin-bottom: 16px;">
           <h2>Lista de la Compra</h2>
-          <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem;" onclick="AppShopping.openAddModal()">＋ Añadir</button>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; background: var(--surface-color);" onclick="AppBulkText.openModal('shopping')">✍️ Texto Compra</button>
+            <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: white;" onclick="AppShopping.openAddModal()">＋ Añadir</button>
+          </div>
         </div>
 
         <div id="shopping-container" class="cards-grid">
@@ -207,7 +205,25 @@
       </div>
     </div>
 
-    <!-- Barra de Navegación Inferior (Móvil Nativa) -->
+    <!-- Modal de Carga Rápida por Texto Masivo -->
+    <div id="bulk-text-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 id="bulk-modal-title" style="font-size: 1.1rem;">Carga Rápida por Texto</h3>
+          <button class="icon-btn" onclick="AppBulkText.closeModal()" style="font-size: 1rem;">✕</button>
+        </div>
+        
+        <p id="bulk-modal-desc" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+          Pega aquí tu texto. Cada línea se procesará de forma independiente.
+        </p>
+
+        <textarea id="bulk-textarea" rows="8" placeholder="Escribe o pega el texto aquí..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 0.85rem; resize: none; margin-bottom: 12px;"></textarea>
+        
+        <button type="button" class="btn-action" onclick="AppBulkText.processAndSave()" style="background: var(--primary); color: white; width: 100%; padding: 12px;">Procesar e Importar</button>
+      </div>
+    </div>
+
+    <!-- Barra de Navegación Inferior -->
     <nav class="bottom-nav">
       <button class="nav-item active" data-target="dashboard" onclick="AppNav.switchView('dashboard')">
         <span class="nav-icon">🏠</span>
@@ -233,23 +249,18 @@
 
   </div>
 
-  <!-- Scripts del Sistema -->
   <script src="config.js"></script>
   <script src="utils.js"></script>
   <script src="api.js"></script>
   <script src="state.js"></script>
   <script src="app.js"></script>
 
-  <!-- Registro del Service Worker para PWA -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function() {
         navigator.serviceWorker.register("./sw.js")
           .then(function(registration) {
             console.log("ServiceWorker registrado con éxito:", registration.scope);
-          })
-          .catch(function(error) {
-            console.log("Fallo en el registro del ServiceWorker:", error);
           });
       });
     }
