@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Meal Planner Familiar</title>
+  
+  <!-- Favicon para navegadores de escritorio -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+  
+  <!-- PWA meta tags -->
+  <meta name="theme-color" content="#10b981">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Estilos CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Contenedor Principal de la App -->
+  <div id="app-container">
+    
+    <!-- Cabecera Superior -->
+    <header class="app-header">
+      <div class="header-title">
+        <h1>Meal Planner</h1>
+        <span id="current-date-badge" class="badge">Cargando...</span>
+      </div>
+      <button id="theme-toggle" class="icon-btn" aria-label="Cambiar tema">🌙</button>
+    </header>
+
+    <!-- Contenido Dinámico de las Vistas -->
+    <main id="main-content" class="view-container">
+      <!-- Vista Dashboard (Por defecto) -->
+      <section id="view-dashboard" class="view active">
+        <div class="welcome-card">
+          <h2>¡Hola, familia! 👋</h2>
+          <p>Organización nutricional y energía para el día a día.</p>
+        </div>
+
+        <div class="section-title">
+          <h3>Menú de Hoy</h3>
+          <span id="today-formatted-date">--/--/----</span>
+        </div>
+
+        <div id="today-meals-list" class="cards-grid">
+          <div class="card skeleton">Cargando menús desde Google Sheets...</div>
+        </div>
+
+        <div class="quick-actions">
+          <h3>Accesos Rápidos</h3>
+          <div class="action-buttons">
+            <button class="btn-action" onclick="AppNav.switchView('menu')">📅 Ver Semana</button>
+            <button class="btn-action" onclick="AppNav.switchView('shopping')">🛒 Lista Compra</button>
+            <button class="btn-action" onclick="AppNav.switchView('recipes')">🍳 Recetas</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista Menú Semanal -->
+      <section id="view-menu" class="view">
+        <div class="section-title" style="margin-bottom: 16px;">
+          <h2>Plan Semanal</h2>
+          <div class="week-nav-controls">
+            <button class="icon-btn" onclick="AppWeek.changeWeek(-1)" aria-label="Semana anterior">◀</button>
+            <span id="current-week-label" style="font-size: 0.85rem; font-weight: 600;">Semana Actual</span>
+            <button class="icon-btn" onclick="AppWeek.changeWeek(1)" aria-label="Semana siguiente">▶</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px; display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+          <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem;" onclick="AppWeek.goToCurrentWeek()">📅 Hoy</button>
+          <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; background: var(--border-color);" onclick="AppWeek.copyPreviousWeek()">📋 Copiar Ant.</button>
+          <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: white;" onclick="AppMenus.openAddModal()">＋ Añadir Menú</button>
+        </div>
+
+        <div id="weekly-menu-container" class="cards-grid">
+          <div class="card skeleton">Cargando planificación semanal...</div>
+        </div>
+      </section>
+
+      <!-- Vista Lista de la Compra -->
+      <section id="view-shopping" class="view">
+        <div class="section-title" style="margin-bottom: 16px;">
+          <h2>Lista de la Compra</h2>
+          <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem;" onclick="AppShopping.openAddModal()">＋ Añadir</button>
+        </div>
+
+        <div id="shopping-container" class="cards-grid">
+          <div class="card skeleton">Cargando lista de la compra...</div>
+        </div>
+      </section>
+
+      <!-- Vista Recetas -->
+      <section id="view-recipes" class="view">
+        <div class="section-title" style="margin-bottom: 16px;">
+          <h2>Recetario</h2>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);" id="recipes-count">0 recetas</span>
+            <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: white;" onclick="AppRecipes.openAddModal()">＋ Nueva</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <input type="text" id="recipe-search" placeholder="🔍 Buscar receta por nombre o ingrediente..." oninput="AppRecipes.filterRecipes(this.value)" style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-main); font-size: 0.9rem;">
+        </div>
+
+        <div id="recipes-container" class="cards-grid">
+          <div class="card skeleton">Cargando recetario...</div>
+        </div>
+      </section>
+
+      <!-- Vista Ajustes -->
+      <section id="view-settings" class="view">
+        <h2>Ajustes</h2>
+        <p>Configuración de la app y sincronización.</p>
+      </section>
+    </main>
+
+    <!-- Modal para Añadir Menú -->
+    <div id="menu-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 1.1rem;">Nuevo Menú</h3>
+          <button class="icon-btn" onclick="AppMenus.closeModal()" style="font-size: 1rem;">✕</button>
+        </div>
+        
+        <form id="menu-form" onsubmit="AppMenus.saveMenu(event)" style="display: flex; flex-direction: column; gap: 10px;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Fecha</label>
+            <input type="date" id="modal-fecha" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Tipo de Comida</label>
+            <select id="modal-tipo" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+              <option value="Desayuno">Desayuno</option>
+              <option value="Almuerzo">Almuerzo</option>
+              <option value="Comida" selected>Comida</option>
+              <option value="Merienda">Merienda</option>
+              <option value="Cena">Cena</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Nombre del plato</label>
+            <input type="text" id="modal-nombre" placeholder="Ej: Arroz con pollo y verduras" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Ingredientes (separados por comas)</label>
+            <input type="text" id="modal-ingredientes" placeholder="Ej: Arroz, Pollo, Brócoli" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Notas / Preparación</label>
+            <input type="text" id="modal-notas" placeholder="Ej: Post-entreno HYROX" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          
+          <button type="submit" class="btn-action" style="background: var(--primary); color: white; margin-top: 8px; padding: 12px;">Guardar Menú</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Añadir Receta -->
+    <div id="recipe-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 1.1rem;">Nueva Receta</h3>
+          <button class="icon-btn" onclick="AppRecipes.closeModal()" style="font-size: 1rem;">✕</button>
+        </div>
+        
+        <form id="recipe-form" onsubmit="AppRecipes.saveRecipe(event)" style="display: flex; flex-direction: column; gap: 10px;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Nombre de la receta</label>
+            <input type="text" id="rec-nombre" placeholder="Ej: Arroz con Pollo Power" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Categoría</label>
+            <select id="rec-categoria" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+              <option value="Desayuno">Desayuno</option>
+              <option value="Comida" selected>Comida</option>
+              <option value="Cena">Cena</option>
+              <option value="Snack / Pre-Entreno">Snack / Pre-Entreno</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1;">
+              <label style="font-size: 0.75rem; color: var(--text-muted);">Tiempo</label>
+              <input type="text" id="rec-tiempo" placeholder="Ej: 25 min" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 0.75rem; color: var(--text-muted);">Personas</label>
+              <input type="number" id="rec-personas" value="2" min="1" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Ingredientes (separados por comas)</label>
+            <input type="text" id="rec-ingredientes" placeholder="Ej: Arroz basmati, Pollo, Brócoli" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Instrucciones de preparación</label>
+            <textarea id="rec-instrucciones" placeholder="Pasos para cocinar..." rows="3" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); resize: none;"></textarea>
+          </div>
+          
+          <button type="submit" class="btn-action" style="background: var(--primary); color: white; margin-top: 8px; padding: 12px;">Guardar Receta</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Barra de Navegación Inferior (Móvil Nativa) -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="dashboard" onclick="AppNav.switchView('dashboard')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Inicio</span>
+      </button>
+      <button class="nav-item" data-target="menu" onclick="AppNav.switchView('menu')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Menú</span>
+      </button>
+      <button class="nav-item" data-target="shopping" onclick="AppNav.switchView('shopping')">
+        <span class="nav-icon">🛒</span>
+        <span class="nav-label">Compra</span>
+      </button>
+      <button class="nav-item" data-target="recipes" onclick="AppNav.switchView('recipes')">
+        <span class="nav-icon">🍳</span>
+        <span class="nav-label">Recetas</span>
+      </button>
+      <button class="nav-item" data-target="settings" onclick="AppNav.switchView('settings')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Ajustes</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Scripts del Sistema -->
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="api.js"></script>
+  <script src="state.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Registro del Service Worker para PWA -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function() {
+        navigator.serviceWorker.register("./sw.js")
+          .then(function(registration) {
+            console.log("ServiceWorker registrado con éxito:", registration.scope);
+          })
+          .catch(function(error) {
+            console.log("Fallo en el registro del ServiceWorker:", error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
